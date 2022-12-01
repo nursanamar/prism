@@ -6,10 +6,10 @@ import { pipe } from 'fp-ts/function';
 import { defaults } from 'lodash';
 import { IPrism, IPrismComponents, IPrismConfig, IPrismDiagnostic, IPrismProxyConfig, IPrismOutput } from './types';
 import { getSemigroup, NonEmptyArray } from 'fp-ts/NonEmptyArray';
-import { DiagnosticSeverity, IHttpRequest } from '@stoplight/types';
-import { IHttpNameValue } from "@stoplight/prism-http/src/types";
+import { DiagnosticSeverity } from '@stoplight/types';
+import { IHttpRequest, IHttpNameValue } from "./types";
 import { identity } from 'fp-ts/function';
-import { getHttpConfigFromRequest } from '@stoplight/prism-http-server/src/getHttpConfigFromRequest';
+import { getHttpConfigFromRequest } from './getHttpConfigFromRequest';
 
 const eitherSequence = A.sequence(E.getApplicativeValidation(getSemigroup<IPrismDiagnostic>()));
 

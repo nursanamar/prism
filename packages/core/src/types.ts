@@ -1,4 +1,4 @@
-import { IDiagnostic } from '@stoplight/types';
+import { IDiagnostic, Dictionary, HttpMethod } from '@stoplight/types';
 import { Either } from 'fp-ts/Either';
 import { ReaderEither } from 'fp-ts/ReaderEither';
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither';
@@ -63,4 +63,76 @@ export interface IPrismOutput<O> {
     input: IPrismDiagnostic[];
     output: IPrismDiagnostic[];
   };
+}
+
+export interface IHttpOperationConfig {
+  mediaTypes?: string[];
+  code?: number;
+  exampleKey?: string;
+  dynamic: boolean;
+}
+
+export type ProblemJson = {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+};
+export class ProblemJsonError extends Error {
+  public static fromTemplate(
+    template: Omit<ProblemJson, 'detail'>,
+    detail?: string,
+    additional?: Dictionary<unknown>
+  ): ProblemJsonError {
+    return new ProblemJsonError(
+      `https://stoplight.io/prism/errors#${template.type}`,
+      template.title,
+      template.status,
+      detail || '',
+      additional
+    );
+  }
+
+  public static toProblemJson(
+    error: Error & { detail?: string; status?: number; additional?: Dictionary<unknown> }
+  ): ProblemJson {
+    return {
+      type: error.name && error.name !== 'Error' ? error.name : 'https://stoplight.io/prism/errors#UNKNOWN',
+      title: error.message,
+      status: error.status || 500,
+      detail: error.detail || '',
+      ...error.additional,
+    };
+  }
+
+  constructor(
+    readonly name: string,
+    readonly message: string,
+    readonly status: number,
+    readonly detail: string,
+    readonly additional?: Dictionary<unknown>
+  ) {
+    super(message);
+  }
+}
+
+export const UNPROCESSABLE_ENTITY: Omit<ProblemJson, 'detail'> = {
+  type: 'UNPROCESSABLE_ENTITY',
+  title: 'Invalid request',
+  status: 422,
+};
+
+export type IHttpNameValues = Dictionary<string | string[]>;
+export type IHttpNameValue = Dictionary<string>;
+export interface IHttpUrl {
+  baseUrl?: string;
+  path: string;
+  query?: IHttpNameValues;
+}
+
+export interface IHttpRequest {
+  method: HttpMethod;
+  url: IHttpUrl;
+  headers?: IHttpNameValue;
+  body?: unknown;
 }
